@@ -1,6 +1,8 @@
 import sys
 import traceback
 import Chess
+import socket
+import threading
 
 from PyQt5 import uic, QtGui
 from PyQt5.QtWidgets import *
@@ -19,6 +21,24 @@ class QDialog(QMainWindow):
 
         self.board = Chess.getBoard()
         self.taken_piece = None
+        self.potok_start = False
+        self.is_white = True
+
+        self.pushButton.clicked.connect(self.on_click)
+        self.radioButton.setChecked(True)
+
+    def on_click(self):
+        self.name = self.lineEdit.text()
+        self.stip = self.lineEdit_2.text()
+        self.is_white = self.radioButton.isChecked()
+        self.server = self.stip, 5059  # Данные сервера
+        self.sor = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sor.bind(('', 0))  # Задаем сокет как клиент
+        self.sor.sendto((self.name + ' Connect to server').encode('utf-8'),
+                        self.server)  # Уведомляем сервер о подключении
+        self.potok = threading.Thread(target=self.read_sok)
+        self.potok.start()
+        print("start")
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -33,9 +53,19 @@ class QDialog(QMainWindow):
                 if str(self.board[i][j]) == "no_piece":
                     continue
                 else:
-                    qp.drawPixmap(20 + 100 * i, 20 + 100 * j, 100, 100, QtGui.QPixmap(f"assets/images/{self.board[i][j].img}.png"))
+                    if self.board[i][j].is_alive:
+                        qp.drawPixmap(20 + 100 * i, 20 + 100 * j, 100, 100,
+                                      QtGui.QPixmap(f"assets/images/{self.board[i][j].img}.png"))
         if self.taken_piece is not None:
-            qp.drawPixmap(20 + 100 * self.taken_piece[0], 20 + 100 * self.taken_piece[1], 100, 100, QtGui.QPixmap(f"assets/taken.png"))
+            qp.drawPixmap(20 + 100 * self.taken_piece[0], 20 + 100 * self.taken_piece[1], 100, 100,
+                          QtGui.QPixmap(f"assets/taken.png"))
+
+    def pmove(self, lx, ly, x, y):
+        self.board[lx][ly].x = x
+        self.board[lx][ly].y = y
+        self.board[x][y] = self.board[lx][ly]
+        self.board[lx][ly] = Chess.Spase()
+        self.repaint()
 
     def board_click(self, e):
         # print("clicked!!")
@@ -45,23 +75,46 @@ class QDialog(QMainWindow):
 
         if self.taken_piece is None:
             if str(self.board[col][row]) != "no_piece":
-                self.taken_piece = (col, row)
+                if self.board[col][row].color == self.is_white:
+                    self.taken_piece = (col, row)
         else:
-            self.board[self.taken_piece[0]][self.taken_piece[1]].go(col, row, self.board)
+            if self.potok_start:
+                self.board[self.taken_piece[0]][self.taken_piece[1]].go(col, row, self.board)
 
             if str(self.board[col][row]) == "no_piece":
+                self.sor.sendto(f"##{self.taken_piece[0]}={self.taken_piece[1]}={col}={row}".encode('utf-8'),
+                                self.server)
                 self.board[self.taken_piece[0]][self.taken_piece[1]].x = col
                 self.board[self.taken_piece[0]][self.taken_piece[1]].y = row
                 self.board[col][row] = self.board[self.taken_piece[0]][self.taken_piece[1]]
                 self.board[self.taken_piece[0]][self.taken_piece[1]] = Chess.Spase()
                 self.taken_piece = None
             else:
-                self.taken_piece = (col, row)
+                if self.board[col][row].color == self.is_white:
+                    self.taken_piece = (col, row)
+                else:
+                    self.sor.sendto(f"##{self.taken_piece[0]}={self.taken_piece[1]}={col}={row}".encode('utf-8'),
+                                    self.server)
 
+                    self.board[self.taken_piece[0]][self.taken_piece[1]].x = col
+                    self.board[self.taken_piece[0]][self.taken_piece[1]].y = row
+                    self.board[col][row] = self.board[self.taken_piece[0]][self.taken_piece[1]]
+                    self.board[self.taken_piece[0]][self.taken_piece[1]] = Chess.Spase()
+                    self.taken_piece = None
 
+        mensahe = f"<{col} and {row}>"
+        self.sor.sendto(('[' + self.name + ']' + mensahe).encode('utf-8'), self.server)
 
         print(col, row)
         self.repaint()
+
+    def read_sok(self):
+        while 1:
+            data = self.sor.recv(1024)
+            dtstr = data.decode('utf-8')
+            if dtstr[:2] == "##":
+                dt = list(map(int, dtstr[2:].split('=')))
+                ex.pmove(dt[0], dt[1], dt[2], dt[3])
 
 
 def excepthook(exc_type, exc_value, exc_tb):
@@ -74,4 +127,11 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = QDialog()
     ex.show()
+    # server = '127.0.0.1', 5059  # Данные сервера
+    # sor = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # sor.bind(('', 0))  # Задаем сокет как клиент
+    # sor.sendto((alias + ' Connect to server').encode('utf-8'), server)  # Уведомляем сервер о подключении
+    # potok = threading.Thread(target=read_sok)
+    # # potok.start()
+    # # print("start")
     sys.exit(app.exec_())
