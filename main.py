@@ -25,6 +25,7 @@ class QDialog(QMainWindow):
         self.is_white = True
 
         self.pushButton.clicked.connect(self.on_click)
+        self.pushButton_2.clicked.connect(self.on_click2)
         self.radioButton.setChecked(True)
 
     def on_click(self):
@@ -39,6 +40,14 @@ class QDialog(QMainWindow):
         self.potok = threading.Thread(target=self.read_sok)
         self.potok.start()
         print("start")
+
+    def on_click2(self):
+        text = self.lineEdit_3.text()
+        text = f'<div style="color: green">[{self.name}]</div> ' + text
+        self.textBrowser.append(text)
+        self.lineEdit_3.clear()
+        self.sor.sendto(f"#@{text}".encode('utf-8'),
+                        self.server)
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -115,6 +124,8 @@ class QDialog(QMainWindow):
             if dtstr[:2] == "##":
                 dt = list(map(int, dtstr[2:].split('=')))
                 ex.pmove(dt[0], dt[1], dt[2], dt[3])
+            elif dtstr[:2] == "#@":
+                self.textBrowser.append(dtstr[2:])
 
 
 def excepthook(exc_type, exc_value, exc_tb):
