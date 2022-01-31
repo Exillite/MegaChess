@@ -112,7 +112,7 @@ class QDialog(QMainWindow):
                     self.taken_piece = None
 
         mensahe = f"<{col} and {row}>"
-        self.sor.sendto(('[' + self.name + ']' + mensahe).encode('utf-8'), self.server)
+        #self.sor.sendto(('[' + self.name + ']' + mensahe).encode('utf-8'), self.server)
 
         print(col, row)
         self.repaint()
