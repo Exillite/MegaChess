@@ -14,7 +14,7 @@
    <string>Новая игра</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QRadioButton" name="radioButton">
+   <widget class="QRadioButton" name="b2">
     <property name="geometry">
      <rect>
       <x>60</x>
@@ -30,7 +30,7 @@
      <string>Приватная</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_2">
+   <widget class="QRadioButton" name="b1">
     <property name="geometry">
      <rect>
       <x>60</x>
@@ -83,7 +83,7 @@
      <string>Доступность:</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="gpEdit">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -99,7 +99,7 @@
      <string>Пароль для входа</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="mkbtn">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -119,7 +119,7 @@
      <x>0</x>
      <y>0</y>
      <width>270</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

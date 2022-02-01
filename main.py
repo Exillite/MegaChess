@@ -13,6 +13,29 @@ from PyQt5.QtGui import *
 class QDialog(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.client_start()
+        self.is_game_now = False
+        self.potok_start = False
+        if True:
+            uic.loadUi('start.ui', self)
+            self.mkgame.clicked.connect(self.create_game_start)
+
+        else:
+            uic.loadUi('login.ui', self)
+
+    def create_game_start(self):
+        uic.loadUi('creategame.ui', self)
+        self.mkbtn.clicked.connect(self.create_game)
+        self.b1.toggled.connect(lambda: self.gpEdit.setEnabled(False))
+        self.b2.toggled.connect(lambda: self.gpEdit.setEnabled(True))
+
+    def create_game(self):
+        # "#n<name>=<count>=<game type>=<password if need>"
+
+
+
+
+    def start_game(self):
         uic.loadUi('designe.ui', self)
         self.boardw = 800
         self.boardh = 800
@@ -21,17 +44,15 @@ class QDialog(QMainWindow):
 
         self.board = Chess.getBoard()
         self.taken_piece = None
-        self.potok_start = False
         self.is_white = True
 
         self.pushButton.clicked.connect(self.on_click)
         self.pushButton_2.clicked.connect(self.on_click2)
         self.radioButton.setChecked(True)
 
-    def on_click(self):
-        self.name = self.lineEdit.text()
-        self.stip = self.lineEdit_2.text()
-        self.is_white = self.radioButton.isChecked()
+    def client_start(self):
+        self.name = "sasha"
+        self.stip = "127.0.0.1"
         self.server = self.stip, 5059  # Данные сервера
         self.sor = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sor.bind(('', 0))  # Задаем сокет как клиент
@@ -50,10 +71,11 @@ class QDialog(QMainWindow):
                         self.server)
 
     def paintEvent(self, event):
-        qp = QPainter()
-        qp.begin(self)
-        self.drawText(event, qp)
-        qp.end()
+        if self.is_game_now:
+            qp = QPainter()
+            qp.begin(self)
+            self.drawText(event, qp)
+            qp.end()
 
     def drawText(self, event, qp):
         qp.drawPixmap(20, 20, 800, 800, QtGui.QPixmap("182869_after.jpeg"))
@@ -126,6 +148,7 @@ class QDialog(QMainWindow):
                 ex.pmove(dt[0], dt[1], dt[2], dt[3])
             elif dtstr[:2] == "#@":
                 self.textBrowser.append(dtstr[2:])
+
 
 
 def excepthook(exc_type, exc_value, exc_tb):
