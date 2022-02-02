@@ -48,7 +48,7 @@
      <string>Создать игру</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="cnktgame">
     <property name="geometry">
      <rect>
       <x>170</x>
@@ -68,7 +68,7 @@
      <x>0</x>
      <y>0</y>
      <width>554</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

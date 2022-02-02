@@ -24,6 +24,9 @@ class Game:
         self.game_password = game_password
         self.game_id = game_id
 
+    def __str__(self):
+        return f"{self.creator_player.name}={self.game_type}={self.game_id}"
+
     def join(self, player, password=""):
         if self.game_type == "public":
             self.is_game_start = True
@@ -68,6 +71,16 @@ while True:
         else:
             g = Game(len(not_started_games), Player(dt[0], int(dt[1]), addres), dt[2])
         not_started_games.append(g)
+        print("one more game")
+
+    if dt_str[:2] == "#l":
+        # "#l"
+        stlg = ""
+        for g in not_started_games:
+            stlg += str(g)
+            stlg += '&'
+        stlg = "#l" + stlg[:-1]
+        sock.sendto(stlg.encode('utf-8'), addres)
 
     if dt_str[:2] == "#j":
         # "#j<name>=<count>=<game id>=<password if need>"
@@ -84,19 +97,19 @@ while True:
                 games[len(games) - 1].white_player = games[len(games) - 1].creator_player
                 games[len(games) - 1].black_player = Player(dt[0], int(dt[1]), addres)
                 sock.sendto(
-                    f"#*start={str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={len(games) - 1}".encode('utf-8'),
+                    f"#*{str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={len(games) - 1}".encode('utf-8'),
                     not_started_games[int(dt[2])].creator_player)
                 sock.sendto(
-                    f"#*start={str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={len(games) - 1}".encode('utf-8'),
+                    f"#*{str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={len(games) - 1}".encode('utf-8'),
                     addres)
             else:
                 games[len(games) - 1].black_player = games[len(games) - 1].creator_player
                 games[len(games) - 1].white_player = Player(dt[0], int(dt[1]), addres)
                 sock.sendto(
-                    f"#*start={dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={len(games) - 1}".encode('utf-8'),
+                    f"#*{dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={len(games) - 1}".encode('utf-8'),
                     not_started_games[int(dt[2])].creator_player)
                 sock.sendto(
-                    f"#*start={dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={len(games) - 1}".encode('utf-8'),
+                    f"#*{dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={len(games) - 1}".encode('utf-8'),
                     addres)
 
             not_started_games[int(dt[2])] = None

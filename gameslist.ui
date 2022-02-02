@@ -14,7 +14,7 @@
    <string>Доступные игры</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QListWidget" name="listWidget">
+   <widget class="QListWidget" name="gmwlist">
     <property name="geometry">
      <rect>
       <x>30</x>
