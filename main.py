@@ -42,9 +42,18 @@ class QDialog(QMainWindow):
 
         self.gmwlist.itemDoubleClicked.connect(self.choice_game)
 
-
-    def choice_game(self):
-        pass
+    def choice_game(self, item):
+        # "#j<name>=<count>=<game id>=<password if need>"
+        s = item.text()
+        for g in self.game_list:
+            if g[0] == s:
+                if g[1] == 'public':
+                    self.sor.sendto(f"#j{self.name}={self.count}={g[2]}".encode('utf-8'), self.server)
+                else:
+                    text, ok = QInputDialog.getText(self, 'Вход в игру', 'Введите пароль:')
+                    if ok:
+                        self.sor.sendto(f"#j{self.name}={self.count}={g[2]}={str(text)}".encode('utf-8'), self.server)
+                break
 
     def create_game_start(self):
         uic.loadUi('creategame.ui', self)
@@ -63,20 +72,24 @@ class QDialog(QMainWindow):
             pswd = self.gpEdit.text()
             self.sor.sendto(f"#n{self.name}={self.count}={game_type}={pswd}".encode('utf-8'), self.server)
 
-    def start_game(self):
+    def start_game(self, ename, ecount, game_id):
         uic.loadUi('designe.ui', self)
         self.boardw = 800
         self.boardh = 800
         self.cagesize = 100
-        self.widget.mouseReleaseEvent = self.board_click
+        self.is_game_now = True
+        self.enemy_name = ename
+        self.enemy_count = ecount
+        self.game_id = game_id
+        self.boardwig.mouseReleaseEvent = self.board_click
 
         self.board = Chess.getBoard()
         self.taken_piece = None
         self.is_white = True
 
-        self.pushButton.clicked.connect(self.on_click)
-        self.pushButton_2.clicked.connect(self.on_click2)
-        self.radioButton.setChecked(True)
+        self.sendmb.clicked.connect(self.onsendmsg)
+        self.backbtn.clicked.connect(self.startui)
+
 
     def client_start(self):
         self.name = "sasha"
@@ -91,13 +104,12 @@ class QDialog(QMainWindow):
         self.potok.start()
         print("start")
 
-    def on_click2(self):
+    def onsendmsg(self):
         text = self.lineEdit_3.text()
         text = f'<div style="color: green">[{self.name}]</div> ' + text
         self.textBrowser.append(text)
         self.lineEdit_3.clear()
-        self.sor.sendto(f"#@{text}".encode('utf-8'),
-                        self.server)
+        self.sor.sendto(f"#@{text}".encode('utf-8'), self.server)
 
     def paintEvent(self, event):
         if self.is_game_now:
@@ -181,7 +193,10 @@ class QDialog(QMainWindow):
                 gml = list(map(lambda n: n.split('&'), dtstr[2:].split('=')))
                 self.game_list = gml
                 self.view_game_list()
-
+            elif dtstr[:2] == "#*":
+                dt = list(map(int, dtstr[2:].split('=')))
+                if dt[0] == "start":
+                    self.go_game()
 
 
 def excepthook(exc_type, exc_value, exc_tb):

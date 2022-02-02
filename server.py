@@ -92,27 +92,31 @@ while True:
         if r:
             games.append(not_started_games[int(dt[2])])
             games[len(games) - 1].game_id = len(games) - 1
-
+            gi = len(games) - 1
             if random.choice([True, False]):
-                games[len(games) - 1].white_player = games[len(games) - 1].creator_player
-                games[len(games) - 1].black_player = Player(dt[0], int(dt[1]), addres)
+
+                games[gi].white_player = games[gi].creator_player
+                games[gi].black_player = Player(dt[0], int(dt[1]), addres)
                 sock.sendto(
-                    f"#*{str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={len(games) - 1}".encode('utf-8'),
+                    f"#*start={str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={gi}".encode('utf-8'),
                     not_started_games[int(dt[2])].creator_player)
                 sock.sendto(
-                    f"#*{str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={len(games) - 1}".encode('utf-8'),
+                    f"#*start={str(not_started_games[int(dt[2])])}={dt[0]}={dt[1]}={gi}".encode('utf-8'),
                     addres)
             else:
-                games[len(games) - 1].black_player = games[len(games) - 1].creator_player
-                games[len(games) - 1].white_player = Player(dt[0], int(dt[1]), addres)
+                games[gi].black_player = games[gi].creator_player
+                games[gi].white_player = Player(dt[0], int(dt[1]), addres)
                 sock.sendto(
-                    f"#*{dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={len(games) - 1}".encode('utf-8'),
+                    f"#*start={dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={gi}".encode('utf-8'),
                     not_started_games[int(dt[2])].creator_player)
                 sock.sendto(
-                    f"#*{dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={len(games) - 1}".encode('utf-8'),
+                    f"#*start={dt[0]}={dt[1]}={str(not_started_games[int(dt[2])])}={gi}".encode('utf-8'),
                     addres)
 
             not_started_games[int(dt[2])] = None
+
+        else:
+            sock.sendto(f"#*not".encode('utf-8'), addres)
 
     if dt_str[:2] == "#$":
         # "#$<from x>=<from y>=<to x>=<to y>=<game id>"
